@@ -1,14 +1,14 @@
 # react-3
-Custom hook'lar (maxsus hook'lar) React-da kodni qayta ishlatish, mantiqni tozalash va komponentlarni ixcham saqlash uchun eng kuchli vositadir.
+Custom hook'lar (maxsus hook'lar) React-da kodni qayta ishlatish, mantiqni ajratish va komponentlarni toza saqlash uchun eng yaxshi usuldir.
 
-Quyida siz so'ragan barcha hook'lar hooks/ papkasi ichida alohida fayllarda, to'liq JSDoc hujjatlashtirish formati va AbortController kabi ilg'or texnikalar bilan tayyorlandi. Oxirida esa ularning barchasini sinab ko'rish uchun DemoApp.js sahifasi ilova qilindi.
+Quyida siz so'ragan barcha hook'lar hooks/ papkasi ichida alohida fayllarda, to'liq JSDoc hujjati va ilg'or amaliyotlar bilan taqdim etilgan. Oxirida esa ularning barchasini ko'rsatib beruvchi bitta yaxlit demo komponenti (DemoApp.js) joylashtirilgan.
 
 1. hooks/useToggle.js
 JavaScript
 import { useState, useCallback } from 'react';
 
 /**
- * Boolean (true/false) holatni osongina almashtirish uchun hook.
+ * Boolean (true/false) holatni osongina o'zgartirish uchun hook.
  * * @param {boolean} [initialValue=false] - Boshlang'ich qiymat
  * @returns {[boolean, function, function, function]} Holat va uni boshqaruvchi funksiyalar (toggle, setTrue, setFalse)
  */
@@ -26,7 +26,7 @@ JavaScript
 import { useState, useEffect } from 'react';
 
 /**
- * Istalgan turdagi ma'lumotni localStorage'da avtomatik saqlash va o'qish uchun universal hook.
+ * Ma'lumotlarni localStorage'da avtomatik saqlash va o'qish uchun universal hook.
  * * @template T
  * @param {string} key - LocalStorage kalit nomi
  * @param {T} initialValue - Boshlang'ich qiymat (agar localStorage bo'sh bo'lsa)
@@ -107,7 +107,7 @@ JavaScript
 import { useState, useEffect } from 'react';
 
 /**
- * Tez o'zgaruvchan qiymatni (masalan input) ma'lum vaqtga kechiktirib beruvchi hook (Search optimizatsiyasi uchun).
+ * Tez o'zgaruvchan qiymatni belgilangan vaqtga kechiktirib beruvchi hook.
  * * @template T
  * @param {T} value - Asosiy tez o'zgaruvchi qiymat
  * @param {number} delay - Kechikish vaqti (millisekundlarda)
@@ -121,7 +121,7 @@ export default function useDebounce(value, delay) {
       setDebouncedValue(value);
     }, delay);
 
-    // Agar foydalanuvchi yana yozishda davom etsa, eski taymer o'chadi
+    // Agar foydalanuvchi yozishda davom etsa, eski taymer o'chadi
     return () => clearTimeout(handler);
   }, [value, delay]);
 
@@ -132,14 +132,14 @@ JavaScript
 import { useEffect } from 'react';
 
 /**
- * Berilgan elementdan tashqariga bosilganda biror amalni (masalan modalni yopish) bajaruvchi hook.
+ * Berilgan elementdan tashqariga bosilganda biror amalni bajaruvchi hook (Modal/Dropdown uchun).
  * * @param {React.RefObject} ref - Tashqarisi kuzatilayotgan element ref'i
  * @param {function} callback - Tashqariga bosilganda ishga tushuvchi funksiya
  */
 export default function useOnClickOutside(ref, callback) {
   useEffect(() => {
     const listener = (event) => {
-      // Agar bosilgan joy ref ichidagi element bo'lsa, hech narsa qilma
+      // Agar bosilgan joy ref ichidagi element bo'lsa, hech narsa qilmaydi
       if (!ref.current || ref.current.contains(event.target)) {
         return;
       }
@@ -176,16 +176,14 @@ export default function useMediaQuery(query) {
 
     const listener = (e) => setMatches(e.matches);
     
-    // Zamonaviy brauzerlar uchun ulanish
     media.addEventListener('change', listener);
-    
     return () => media.removeEventListener('change', listener);
   }, [query, matches]);
 
   return matches;
 }
 7. Demo Sahifa: DemoApp.js
-Ushbu sahifa barcha yaratilgan custom hook'larni bitta joyda qanday ishlashini ko'rsatib beradi.
+Barcha yaratilgan hook'larni real misolda tekshirish va ishlatish uchun ushbu demo sahifadan foydalanishingiz mumkin:
 
 JavaScript
 import React, { useState, useRef } from 'react';
@@ -198,26 +196,26 @@ import useMediaQuery from './hooks/useMediaQuery';
 import './DemoApp.css';
 
 export default function DemoApp() {
-  // A. useToggle misoli
+  // A. useMediaQuery
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  // B. useToggle
   const [isOpen, toggleOpen, setOpenTrue, setOpenFalse] = useToggle(false);
 
-  // B. useLocalStorage misoli
+  // C. useLocalStorage
   const [name, setName] = useLocalStorage('username', 'Jasur');
 
-  // C. useDebounce va useFetch misoli
+  // D. useDebounce va useFetch birgalikda (Foydalanuvchi ID bo'yicha qidiruv)
   const [searchId, setSearchId] = useState('1');
-  const debouncedId = useDebounce(searchId, 500); // 500ms kutadi
+  const debouncedId = useDebounce(searchId, 500); // 500ms o'tgach fetch qiladi
   const { data, loading, error } = useFetch(
     debouncedId ? `https://jsonplaceholder.typicode.com/users/${debouncedId}` : null
   );
 
-  // D. useOnClickOutside misoli (Dropdown/Modal)
+  // E. useOnClickOutside (Dropdown / Modal)
   const dropdownRef = useRef();
   const [dropdownVisible, toggleDropdown, , setDropdownFalse] = useToggle(false);
   useOnClickOutside(dropdownRef, setDropdownFalse);
-
-  // E. useMediaQuery misoli
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   return (
     <div className="demo-container">
@@ -226,7 +224,7 @@ export default function DemoApp() {
       {/* 1. useMediaQuery */}
       <div className="demo-card">
         <h3>1. useMediaQuery</h3>
-        <p>Ekran holati: {isMobile ? '📱 Mobil (<=768px)' : '💻 Desktop (>768px)'}</p>
+        <p>Ekran holati: {isMobile ? '📱 Mobil rejim (<=768px)' : '💻 Desktop rejim (>768px)'}</p>
       </div>
 
       {/* 2. useToggle */}
@@ -235,7 +233,7 @@ export default function DemoApp() {
         <button onClick={toggleOpen}>Almashtirish (Toggle)</button>
         <button onClick={setOpenTrue}>True qilish</button>
         <button onClick={setOpenFalse}>False qilish</button>
-        <p>Holat qiymati: <strong>{isOpen ? 'TRUE 🟢' : 'FALSE 🔴'}</strong></p>
+        <p>Holat qiymati: <strong>{isOpen ? 'OCHIQ 🟢' : 'YOPIQ 🔴'}</strong></p>
       </div>
 
       {/* 3. useLocalStorage */}
@@ -257,7 +255,7 @@ export default function DemoApp() {
           <button onClick={toggleDropdown}>Dropdown Menyu</button>
           {dropdownVisible && (
             <div className="dropdown-box">
-              <p>Menyu ochiq! Karta tashqarisiga bossangiz u yopiladi.</p>
+              <p>Menyu faol! Karta tashqarisiga yoki ekranning ixtiyoriy bo'sh joyiga bossangiz u yopiladi.</p>
             </div>
           )}
         </div>
@@ -265,15 +263,17 @@ export default function DemoApp() {
 
       {/* 5. useDebounce & useFetch */}
       <div className="demo-card">
-        <h3>5. useDebounce & useFetch Combined</h3>
-        <label>Foydalanuvchi ID (1-10 gacha yozing): </label>
+        <h3>5. useDebounce & useFetch (Birgalikda)</h3>
+        <label>Foydalanuvchi ID (1-10 gacha kiriting): </label>
         <input 
           type="number" 
           value={searchId} 
           onChange={(e) => setSearchId(e.target.value)}
           min="1" max="10"
         />
-        <small style={{display:'block', color:'#666'}}>Debounce yuklanishni 500ms kechiktiradi...</small>
+        <small style={{display:'block', color:'#666', marginTop: '4px'}}>
+          Yozishdan to'xtaganingizdan so'ng 500ms kutiladi...
+        </small>
 
         <div className="fetch-result-box">
           {loading && <p>⏳ API'dan ma'lumot yuklanmoqda...</p>}
@@ -290,11 +290,11 @@ export default function DemoApp() {
     </div>
   );
 }
-DemoApp.css (Minimal stillar)
+DemoApp.css (Tashqi stillar)
 CSS
 body {
   background-color: #f3f4f6;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   padding: 20px;
 }
 .demo-container {
@@ -305,47 +305,54 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
-h1 { text-align: center; color: #1f2937; }
+h1 { text-align: center; color: #1f2937; margin-bottom: 25px; }
 .demo-card {
   border: 1px solid #e5e7eb;
-  padding: 15px;
+  padding: 20px;
   border-radius: 8px;
   margin-bottom: 15px;
   background: #f9fafb;
 }
-.demo-card h3 { margin-top: 0; color: #3b82f6; }
+.demo-card h3 { margin-top: 0; color: #3b82f6; font-size: 1.1rem; }
 button {
-  padding: 8px 12px;
-  margin-right: 5px;
+  padding: 8px 14px;
+  margin-right: 6px;
   border: 1px solid #cbd5e1;
   background: white;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
 }
-button:hover { background: #f1f5f9; }
+button:hover { background: #f1f5f9; border-color: #94a3b8; }
 input {
-  padding: 8px;
+  padding: 8px 12px;
   border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  margin-bottom: 5px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
 }
+input:focus { border-color: #3b82f6; }
 .dropdown-wrapper { position: relative; display: inline-block; }
 .dropdown-box {
   position: absolute;
-  top: 105%;
+  top: 110%;
   left: 0;
   background: #1e293b;
   color: #fff;
-  padding: 10px;
+  padding: 12px;
   border-radius: 6px;
   z-index: 10;
-  width: 200px;
-  font-size: 0.9rem;
+  width: 220px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 .fetch-result-box {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 12px;
+  padding: 12px;
   background: #fff;
   border-left: 4px solid #10b981;
-  border-radius: 4px;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
 }
+.fetch-result-box p { margin: 6px 0; font-size: 0.95rem; }
